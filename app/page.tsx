@@ -94,43 +94,43 @@ const galleryItems: GalleryItem[] = [
     title: "Aluminium Doors & Windows",
     category: "Villa glazing",
     description: "Slim, modern framing systems for bright and premium living spaces.",
-    image: "/gallery/aluminium-doors-windows.png",
+    image: "gallery/aluminium-doors-windows.png",
   },
   {
     title: "Glass Partitions",
     category: "Corporate interiors",
     description: "Executive-grade partition systems crafted for clean, open office environments.",
-    image: "/gallery/glass-partitions.png",
+    image: "gallery/glass-partitions.png",
   },
   {
     title: "Kitchen Cabinets",
     category: "Luxury interiors",
     description: "Refined cabinet workmanship with premium material coordination and elegant finishes.",
-    image: "/gallery/kitchen-cabinets.png",
+    image: "gallery/kitchen-cabinets.png",
   },
   {
     title: "Rolling Shutters",
     category: "Retail security",
     description: "Durable commercial shutters balancing security, aesthetics, and daily performance.",
-    image: "/gallery/rolling-shutters.png",
+    image: "gallery/rolling-shutters.png",
   },
   {
     title: "Casting Gates & Grills",
     category: "Exterior metalwork",
     description: "Decorative entrance gates and crafted grill work for statement architectural facades.",
-    image: "/gallery/casting-gates-grills.png",
+    image: "gallery/casting-gates-grills.png",
   },
   {
     title: "Grill & Glass Doors",
     category: "Residential entry",
     description: "Stylish entrance systems blending privacy, elegance, and premium security presence.",
-    image: "/gallery/glass-grill-doors.png",
+    image: "gallery/glass-grill-doors.png",
   },
   {
     title: "Window & Wood Doors",
     category: "Mixed material design",
     description: "Warm wood finishes paired with glazing and clean-lined modern architectural frames.",
-    image: "/gallery/wood-doors-windows.png",
+    image: "gallery/wood-doors-windows.png",
   },
 ];
 
@@ -467,7 +467,7 @@ export default function Home() {
         <div className="section-shell py-6 md:py-10">
           <div className="relative overflow-hidden rounded-[40px] border border-white/10">
             <Image
-              src="/gallery/africa-delivery-showcase.png"
+              src="gallery/africa-delivery-showcase.png"
               alt="Premium aluminium and glass delivery showcase across Africa"
               fill
               priority
@@ -560,7 +560,7 @@ export default function Home() {
                     <div className="glass-card rounded-[30px] p-4">
                       <div className="relative h-[260px] overflow-hidden rounded-[24px]">
                         <Image
-                          src="/gallery/glass-grill-doors.png"
+                          src="gallery/glass-grill-doors.png"
                           alt="Luxury grill and glass entrance door"
                           fill
                           className="object-cover"
@@ -582,7 +582,7 @@ export default function Home() {
                     <div className="glass-card rounded-[34px] p-4">
                       <div className="relative h-[360px] overflow-hidden rounded-[28px]">
                         <Image
-                          src="/gallery/aluminium-doors-windows.png"
+                          src="gallery/aluminium-doors-windows.png"
                           alt="Premium aluminium doors and windows"
                           fill
                           className="object-cover"
@@ -681,7 +681,7 @@ export default function Home() {
             <div className="glass-card rounded-[36px] p-4">
               <div className="relative h-[520px] overflow-hidden rounded-[30px]">
                 <Image
-                  src="/gallery/kitchen-cabinets.png"
+                  src="gallery/kitchen-cabinets.png"
                   alt="Luxury kitchen cabinets by Farhan Asif Aluminium and Glass Fixing"
                   fill
                   className="object-cover"
@@ -815,7 +815,7 @@ export default function Home() {
         <div className="section-shell">
           <div className="relative overflow-hidden rounded-[40px] border border-white/10">
             <Image
-              src="/gallery/africa-delivery-showcase.png"
+              src="gallery/africa-delivery-showcase.png"
               alt="Delivery and project support across African countries"
               fill
               className="object-cover"

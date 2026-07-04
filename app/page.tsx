@@ -28,7 +28,7 @@ import {
   MANAGING_DIRECTOR,
 } from "./lib/i18n/translations";
 
-const LOGO_SRC = "gallery/Logo.png";
+const LOGO_SRC = "gallery/logo.png";
 
 const heroFeatureIcons = [Shield, Users, Clock, Wrench];
 const visionMissionIcons = [Target, Building2, Shield];

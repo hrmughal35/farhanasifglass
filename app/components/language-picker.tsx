@@ -20,7 +20,7 @@ export default function LanguagePicker({ onSelect }: LanguagePickerProps) {
       >
         <div className="mx-auto mb-6 flex justify-center">
           <Image
-            src="gallery/Logo.png"
+            src="gallery/logo.png"
             alt="Farhan Asif"
             width={180}
             height={64}

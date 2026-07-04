@@ -1,1081 +1,881 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
-import type { Variants } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
-  BadgeCheck,
-  CheckCircle2,
-  Clock3,
-  DoorOpen,
-  Factory,
-  Globe,
-  Layers3,
+  Building2,
+  Check,
+  Clock,
   Mail,
   MapPin,
-  MessageCircle,
   Menu,
+  MessageCircle,
   Phone,
-  Quote,
-  ShieldCheck,
-  Sparkles,
+  Shield,
+  Target,
   Truck,
+  Users,
   Wrench,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import LanguageSwitcher from "./components/language-switcher";
+import { useLanguage } from "./components/language-provider";
+import {
+  COMPANY_NAME,
+  COMPANY_NAME_AR,
+  MANAGING_DIRECTOR,
+} from "./lib/i18n/translations";
 
-type Service = {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-};
+const LOGO_SRC = "gallery/Logo.png";
 
-type GalleryItem = {
-  title: string;
-  category: string;
-  description: string;
-  image: string;
-};
+const heroFeatureIcons = [Shield, Users, Clock, Wrench];
+const visionMissionIcons = [Target, Building2, Shield];
+const serviceIcons = [Truck, Building2, Building2, Wrench];
+const serviceFeatureIcons = [Users, Wrench, Shield, Clock];
+const contactIcons = [Phone, Phone, Mail, MapPin, Clock];
 
-const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Products", href: "#gallery" },
-  { label: "Services", href: "#services" },
-  { label: "Reach", href: "#reach" },
-  { label: "Contact", href: "#contact" },
+const productImages = [
+  "gallery/glass-grill-doors.png",
+  "gallery/aluminium-doors-windows.png",
+  "gallery/wood-doors-windows.png",
+  "gallery/africa-delivery-showcase.png",
+  "gallery/glass-partitions.png",
+  "gallery/glass-grill-doors.png",
+  "gallery/kitchen-cabinets.png",
+  "gallery/casting-gates-grills.png",
+  "gallery/wood-doors-windows.png",
+  "gallery/rolling-shutters.png",
 ];
 
-const arabicCompanyTitle = "فرحان آصف لتركيب الألمنيوم والزجاج ذ.م.م";
+const projectFilters = ["All", "Residential", "Commercial", "Hospitality", "Industrial"] as const;
+type ProjectFilter = (typeof projectFilters)[number];
 
-const services: Service[] = [
-  {
-    title: "Aluminium Doors & Windows",
-    description:
-      "Luxury sliding systems, fixed glazing, casement profiles, and facade-ready aluminium solutions.",
-    icon: DoorOpen,
-  },
-  {
-    title: "Glass Doors & Partitions",
-    description:
-      "Executive office partitions, entrance systems, and frameless glass enclosures with premium detailing.",
-    icon: Layers3,
-  },
-  {
-    title: "Kitchen Cabinets",
-    description:
-      "Elegant cabinetry packages crafted to combine utility, visual order, and modern interior character.",
-    icon: Sparkles,
-  },
-  {
-    title: "Rolling Shutters",
-    description:
-      "Smooth-operating shutter systems for retail, industrial, and mixed-use commercial environments.",
-    icon: Factory,
-  },
-  {
-    title: "Casting Gates & Grills",
-    description:
-      "Decorative yet durable entrance gates and grill work designed to elevate curb appeal and security.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Custom Aluminium & Glass Work",
-    description:
-      "Bespoke fabrication for balconies, staircases, villas, showrooms, and one-of-a-kind architectural briefs.",
-    icon: Wrench,
-  },
+const projectMeta: { category: ProjectFilter; image: string }[] = [
+  { category: "Residential", image: "gallery/aluminium-doors-windows.png" },
+  { category: "Commercial", image: "gallery/glass-partitions.png" },
+  { category: "Commercial", image: "gallery/kitchen-cabinets.png" },
+  { category: "Residential", image: "gallery/africa-delivery-showcase.png" },
+  { category: "Hospitality", image: "gallery/glass-grill-doors.png" },
+  { category: "Industrial", image: "gallery/rolling-shutters.png" },
 ];
 
-const galleryItems: GalleryItem[] = [
-  {
-    title: "Aluminium Doors & Windows",
-    category: "Villa glazing",
-    description: "Slim, modern framing systems for bright and premium living spaces.",
-    image: "gallery/aluminium-doors-windows.png",
-  },
-  {
-    title: "Glass Partitions",
-    category: "Corporate interiors",
-    description: "Executive-grade partition systems crafted for clean, open office environments.",
-    image: "gallery/glass-partitions.png",
-  },
-  {
-    title: "Kitchen Cabinets",
-    category: "Luxury interiors",
-    description: "Refined cabinet workmanship with premium material coordination and elegant finishes.",
-    image: "gallery/kitchen-cabinets.png",
-  },
-  {
-    title: "Rolling Shutters",
-    category: "Retail security",
-    description: "Durable commercial shutters balancing security, aesthetics, and daily performance.",
-    image: "gallery/rolling-shutters.png",
-  },
-  {
-    title: "Casting Gates & Grills",
-    category: "Exterior metalwork",
-    description: "Decorative entrance gates and crafted grill work for statement architectural facades.",
-    image: "gallery/casting-gates-grills.png",
-  },
-  {
-    title: "Grill & Glass Doors",
-    category: "Residential entry",
-    description: "Stylish entrance systems blending privacy, elegance, and premium security presence.",
-    image: "gallery/glass-grill-doors.png",
-  },
-  {
-    title: "Window & Wood Doors",
-    category: "Mixed material design",
-    description: "Warm wood finishes paired with glazing and clean-lined modern architectural frames.",
-    image: "gallery/wood-doors-windows.png",
-  },
+const navHrefs = [
+  { key: "home" as const, href: "#home" },
+  { key: "about" as const, href: "#about" },
+  { key: "products" as const, href: "#products" },
+  { key: "services" as const, href: "#services" },
+  { key: "projects" as const, href: "#projects" },
+  { key: "contact" as const, href: "#contact" },
 ];
 
-const craftsmanshipPoints = [
-  "Dubai-based production and site execution",
-  "Luxury-focused finishes with practical durability",
-  "Built and delivered across African countries",
-  "Custom fabrication shaped around each project brief",
+const footerLinkHrefs = [
+  { key: "home" as const, href: "#home" },
+  { key: "about" as const, href: "#about" },
+  { key: "products" as const, href: "#products" },
+  { key: "services" as const, href: "#services" },
+  { key: "projects" as const, href: "#projects" },
+  { key: "getQuote" as const, href: "#quote" },
+  { key: "contact" as const, href: "#contact" },
 ];
 
-const signatureMetrics = [
-  { value: "Luxury", label: "Positioned for premium villas, offices, and commercial facades" },
-  { value: "Africa", label: "Product delivery and project support across African countries" },
-  { value: "Tailored", label: "Every installation aligned with material, scale, and design intent" },
-];
-
-const contactDetails = [
-  {
-    label: "Phone",
-    value: "+971528903210",
-    href: "tel:+971528903210",
-    icon: Phone,
-  },
-  {
-    label: "Email",
-    value: "asif.farhanasif@yahoo.com",
-    href: "mailto:asif.farhanasif@yahoo.com",
-    icon: Mail,
-  },
-  {
-    label: "Location",
-    value: "Frij Al Murar, Near Latif Mosque, Deira, Dubai - UAE",
-    href: "https://maps.google.com/?q=Frij%20Al%20Murar%2C%20Near%20Latif%20Mosque%2C%20Deira%2C%20Dubai%20-%20UAE",
-    icon: MapPin,
-  },
-];
-
-const reasons = [
-  {
-    title: "High Quality Materials",
-    description: "Selected systems and finishes with a premium look and long-term durability.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Skilled Workforce",
-    description: "Experienced fabrication and fixing teams focused on detail, alignment, and finish.",
-    icon: Sparkles,
-  },
-  {
-    title: "Timely Delivery",
-    description: "Structured execution for projects that demand coordination, speed, and consistency.",
-    icon: Clock3,
-  },
-  {
-    title: "Reliable Pricing",
-    description: "Strong value for premium output without losing craftsmanship or presentation quality.",
-    icon: BadgeCheck,
-  },
-];
-
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: (index = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.7,
-      delay: index * 0.08,
-      ease: [0.22, 1, 0.36, 1] as const,
-    },
-  }),
-};
-
-function SectionHeader({
-  eyebrow,
-  title,
-  description,
+function CompanyLogo({
+  compact = false,
+  onDark = false,
+  alt,
 }: {
-  eyebrow: string;
-  title: string;
-  description: string;
+  compact?: boolean;
+  onDark?: boolean;
+  alt: string;
 }) {
   return (
-    <motion.div
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.35 }}
-      variants={fadeInUp}
-      className="mb-12 max-w-3xl"
-    >
-      <span className="glass-outline inline-flex rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-        {eyebrow}
-      </span>
-      <h2 className="mt-5 font-display text-3xl font-semibold tracking-tight text-white md:text-5xl">
-        {title}
-      </h2>
-      <p className="mt-4 text-base leading-8 text-slate-300 md:text-lg">
-        {description}
-      </p>
-    </motion.div>
+    <div className={onDark ? "bg-navy leading-none" : undefined}>
+      <Image
+        src={LOGO_SRC}
+        alt={alt}
+        width={compact ? 160 : 280}
+        height={compact ? 48 : 100}
+        priority={compact}
+        className={`block h-auto w-auto shrink-0 object-contain ${compact ? "max-h-12" : "max-h-24"}`}
+      />
+    </div>
   );
 }
 
-function MonogramLogo({ compact = false }: { compact?: boolean }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <p className="section-label">{children}</p>;
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <h2 className="section-title mt-3">{children}</h2>;
+}
+
+function CheckListItem({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className={`fa-monogram ${compact ? "h-14 w-14" : "h-24 w-24 md:h-28 md:w-28"}`}
-    >
-      <svg viewBox="0 0 120 120" className="h-full w-full" aria-hidden="true">
-        <circle cx="60" cy="60" r="56" fill="#ffffff" stroke="#0f1f32" strokeWidth="6" />
-        <circle cx="60" cy="60" r="43" fill="none" stroke="#101d2d" strokeWidth="2.2" />
-        <path d="M13 25l18-11 19 19-15 8-22-16Z" fill="#ffffff" stroke="#0f1f32" strokeWidth="2.8" />
-        <path d="M23 7l15-6 25 24-13 7L23 7Z" fill="#ffffff" stroke="#0f1f32" strokeWidth="2.8" />
-        <text x="35" y="78" fill="#0f1f32" fontSize="58" fontWeight="700" letterSpacing="-4" fontFamily="Times New Roman, serif">
-          F
-        </text>
-        <text x="54" y="81" fill="#0f1f32" fontSize="62" fontWeight="700" letterSpacing="-4" fontFamily="Times New Roman, serif">
-          A
-        </text>
-        <path d="M22 64c15-7 40-8 76 0" stroke="#0f1f32" strokeWidth="2.8" fill="none" strokeLinecap="round" />
-      </svg>
+    <li className="check-item">
+      <span className="check-item__icon">
+        <Check className="h-3 w-3" strokeWidth={3} />
+      </span>
+      <span className="text-sm leading-6">{children}</span>
+    </li>
+  );
+}
+
+function FeatureBox({
+  title,
+  description,
+  icon: Icon,
+  dark = false,
+}: {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  dark?: boolean;
+}) {
+  return (
+    <div className="text-center">
+      <div className="feature-icon-wrap mx-auto text-gold">
+        <Icon className="h-8 w-8" strokeWidth={1.5} />
+      </div>
+      <h3
+        className={`mt-4 font-display text-sm font-bold uppercase tracking-wide ${dark ? "text-white" : "text-navy"}`}
+      >
+        {title}
+      </h3>
+      <p className={`mt-2 text-sm leading-6 ${dark ? "text-white/70" : "text-gray-600"}`}>
+        {description}
+      </p>
     </div>
   );
 }
 
 export default function Home() {
+  const { t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("#home");
+  const [projectFilter, setProjectFilter] = useState<ProjectFilter>("All");
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 18 }, (_, index) => ({
-        id: index,
-        size: 4 + (index % 4) * 3,
-        left: `${(index * 13) % 100}%`,
-        top: `${(index * 19) % 100}%`,
-        duration: 7 + (index % 5),
-        delay: index * 0.25,
-      })),
-    []
-  );
+  const navLinks = navHrefs.map((item) => ({
+    href: item.href,
+    label: t.nav[item.key],
+  }));
+
+  const projects = t.projects.items.map((item, index) => ({
+    title: item.title,
+    category: projectMeta[index].category,
+    image: projectMeta[index].image,
+  }));
+
+  const filteredProjects =
+    projectFilter === "All"
+      ? projects
+      : projects.filter((project) => project.category === projectFilter);
+
+  const contactInfo = [
+    {
+      label: t.contact.labels.phone,
+      value: "+971 52 890 3210",
+      href: "tel:+971528903210",
+      icon: contactIcons[0],
+    },
+    {
+      label: t.contact.labels.phoneAlt,
+      value: "+971 52 136 5299",
+      href: "tel:+971521365299",
+      icon: contactIcons[1],
+    },
+    {
+      label: t.contact.labels.email,
+      value: "asif.farhanasif@yahoo.com",
+      href: "mailto:asif.farhanasif@yahoo.com",
+      icon: contactIcons[2],
+    },
+    {
+      label: t.contact.labels.address,
+      value: t.contact.addressValue,
+      href: "https://maps.google.com/?q=Frij%20Al%20Murar%2C%20Near%20Latifa%20Mosque%2C%20Deira%2C%20Dubai%20-%20UAE",
+      icon: contactIcons[3],
+    },
+    {
+      label: t.contact.labels.workingHours,
+      value: t.contact.workingHoursValue,
+      href: undefined,
+      icon: contactIcons[4],
+    },
+  ];
 
   useEffect(() => {
-    const sectionIds = ["home", "about", "gallery", "services", "reach", "contact"];
+    const sectionIds = ["home", "about", "products", "services", "quote", "projects", "contact"];
 
-    const updateNavbarState = () => {
-      setIsScrolled(window.scrollY > 24);
-
-      const currentSection =
+    const updateActive = () => {
+      const current =
         sectionIds.findLast((id) => {
-          const element = document.getElementById(id);
-
-          if (!element) {
-            return false;
-          }
-
-          return window.scrollY >= element.offsetTop - 180;
+          const el = document.getElementById(id);
+          return el && window.scrollY >= el.offsetTop - 120;
         }) ?? "home";
-
-      setActiveSection(`#${currentSection}`);
+      setActiveSection(`#${current}`);
     };
 
-    updateNavbarState();
-    window.addEventListener("scroll", updateNavbarState, { passive: true });
-
-    return () => window.removeEventListener("scroll", updateNavbarState);
+    updateActive();
+    window.addEventListener("scroll", updateActive, { passive: true });
+    return () => window.removeEventListener("scroll", updateActive);
   }, []);
 
   return (
-    <main className="relative overflow-x-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        {particles.map((particle) => (
-          <motion.span
-            key={particle.id}
-            className="absolute rounded-full bg-white/25"
-            style={{
-              width: particle.size,
-              height: particle.size,
-              left: particle.left,
-              top: particle.top,
-              boxShadow: "0 0 24px rgba(216, 188, 128, 0.16)",
-            }}
-            animate={{ y: [0, -18, 0], opacity: [0.18, 0.75, 0.18] }}
-            transition={{
-              duration: particle.duration,
-              repeat: Number.POSITIVE_INFINITY,
-              delay: particle.delay,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
+    <>
+      <header className="fixed inset-x-0 top-0 z-50 bg-navy shadow-lg">
+        <div className="section-shell flex items-center justify-between gap-4 py-3">
+          <a href="#home" className="shrink-0">
+            <CompanyLogo compact onDark alt={t.common.logoAlt} />
+          </a>
 
-      <header className="fixed inset-x-0 top-0 z-50">
-        <motion.div
-          animate={{ paddingTop: isScrolled ? 10 : 20 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="section-shell"
-        >
-          <motion.nav
-            animate={{ scale: isScrolled ? 0.985 : 1, y: isScrolled ? -2 : 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className={`relative overflow-hidden rounded-[30px] border px-4 py-4 shadow-[0_28px_80px_rgba(2,10,20,0.5)] backdrop-blur-[30px] md:px-6 ${
-              isScrolled
-                ? "border-[rgba(216,188,128,0.22)] bg-[linear-gradient(135deg,rgba(7,13,23,0.96),rgba(14,26,40,0.92))]"
-                : "border-white/12 bg-[linear-gradient(135deg,rgba(10,19,31,0.84),rgba(17,34,52,0.68))]"
-            }`}
-          >
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-              <div className="absolute left-6 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-[rgba(216,188,128,0.12)] blur-3xl" />
-              <div className="absolute right-8 top-0 h-28 w-36 rounded-full bg-white/6 blur-3xl" />
-            </div>
-
-            <div className="relative flex items-center justify-between gap-4 lg:grid lg:grid-cols-[1.1fr_auto_1fr]">
-              <a href="#home" className="flex min-w-0 items-center gap-4">
-                <MonogramLogo compact />
-                <div className="min-w-0">
-                  <p className="hidden truncate text-[11px] font-medium text-slate-200 md:block">
-                    {arabicCompanyTitle}
-                  </p>
-                  <p className="truncate font-display text-sm font-semibold tracking-[0.34em] text-white">
-                    FARHAN ASIF
-                  </p>
-                  <div className="mt-1 flex items-center gap-3 text-xs text-slate-300">
-                    <span className="truncate">Aluminium & Glass Fixing L.L.C.</span>
-                    <span className="hidden h-1 w-1 rounded-full bg-[color:var(--gold)] md:block" />
-                    <span className="hidden uppercase tracking-[0.28em] text-[color:var(--gold-soft)] md:block">
-                      Dubai
-                    </span>
-                  </div>
-                </div>
-              </a>
-
-              <div className="hidden lg:flex lg:justify-center">
-                <div className="rounded-full border border-white/10 bg-white/[0.04] p-1 backdrop-blur-xl">
-                  <div className="flex items-center gap-1">
-                    {navLinks.map((link) => {
-                      const isActive = activeSection === link.href;
-
-                      return (
-                        <a
-                          key={link.href}
-                          href={link.href}
-                          className={`rounded-full px-4 py-2.5 text-sm transition ${
-                            isActive
-                              ? "bg-white/12 text-white shadow-[0_0_18px_rgba(216,188,128,0.14)]"
-                              : "text-slate-300 hover:bg-white/8 hover:text-white"
-                          }`}
-                        >
-                          {link.label}
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="hidden items-center justify-end gap-3 md:flex">
-                <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2.5 text-right backdrop-blur-xl">
-                  <p className="text-[10px] uppercase tracking-[0.34em] text-slate-400">
-                    Delivering
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-white">Dubai to Africa</p>
-                </div>
-                <a
-                  href="#contact"
-                  className="group inline-flex items-center gap-3 rounded-full border border-[rgba(216,188,128,0.3)] bg-[linear-gradient(135deg,rgba(216,188,128,0.24),rgba(255,255,255,0.08))] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(216,188,128,0.16)] transition hover:shadow-[0_18px_50px_rgba(216,188,128,0.26)]"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10">
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
-                  </span>
-                  Get a Quote
-                </a>
-              </div>
-
-              <button
-                type="button"
-                aria-label="Toggle menu"
-                onClick={() => setMenuOpen((current) => !current)}
-                className="flex h-12 w-12 items-center justify-center rounded-[20px] border border-white/15 bg-white/[0.06] text-white backdrop-blur-xl md:hidden"
-              >
-                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {menuOpen ? (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden md:hidden"
-                >
-                  <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
-                    <div className="rounded-[24px] border border-white/10 bg-white/[0.05] p-2">
-                      {navLinks.map((link) => {
-                        const isActive = activeSection === link.href;
-
-                        return (
-                          <a
-                            key={link.href}
-                            href={link.href}
-                            onClick={() => setMenuOpen(false)}
-                            className={`block rounded-2xl px-4 py-3 text-sm transition ${
-                              isActive
-                                ? "bg-white/12 text-white"
-                                : "text-slate-300 hover:bg-white/10 hover:text-white"
-                            }`}
-                          >
-                            {link.label}
-                          </a>
-                        );
-                      })}
-                    </div>
-                    <a
-                      href="#contact"
-                      onClick={() => setMenuOpen(false)}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-[24px] border border-[rgba(216,188,128,0.28)] bg-[linear-gradient(135deg,rgba(216,188,128,0.24),rgba(255,255,255,0.08))] px-4 py-3.5 text-sm font-semibold text-white"
-                    >
-                      Get a Quote
-                      <ArrowRight className="h-4 w-4" />
-                    </a>
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
-          </motion.nav>
-        </motion.div>
-      </header>
-
-      <section id="home" className="relative min-h-screen pt-28">
-        <div className="section-shell py-6 md:py-10">
-          <div className="relative overflow-hidden rounded-[40px] border border-white/10">
-            <Image
-              src="gallery/africa-delivery-showcase.png"
-              alt="Premium aluminium and glass delivery showcase across Africa"
-              fill
-              priority
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(6,12,21,0.92)_8%,rgba(6,12,21,0.7)_42%,rgba(6,12,21,0.46)_68%,rgba(6,12,21,0.84)_100%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(216,188,128,0.18),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(0,194,255,0.12),transparent_30%)]" />
-
-            <div className="relative grid min-h-[700px] gap-10 px-6 pb-10 pt-8 md:px-10 lg:grid-cols-[1.08fr_0.92fr] lg:px-14 lg:pb-12 lg:pt-10">
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={fadeInUp}
-                className="flex flex-col justify-start pt-4 lg:pt-10"
-              >
-                <div className="inline-flex max-w-max items-center gap-3 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.36em] text-[color:var(--gold-soft)] backdrop-blur-xl">
-                  <span className="h-2 w-2 rounded-full bg-[color:var(--gold)]" />
-                  Luxury Aluminium Craftsmanship
-                </div>
-
-                <h1 className="mt-8 max-w-4xl font-display text-5xl font-semibold leading-[0.98] tracking-tight text-white md:text-7xl">
-                  Romantic luxury in{" "}
-                  <span className="text-gradient-luxury">aluminium, glass, and crafted detail.</span>
-                </h1>
-                <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200 md:text-xl">
-                  Premium aluminium doors, partitions, grill and glass doors, kitchen
-                  cabinets, casting gates, windows, wood doors, and rolling shutters
-                  designed in Dubai and delivered for projects across African countries.
-                </p>
-
-                <div className="mt-8 flex items-center gap-5">
-                  <MonogramLogo />
-                  <div className="max-w-sm">
-                    <p className="text-sm text-slate-200">{arabicCompanyTitle}</p>
-                    <p className="font-display text-xl text-white md:text-2xl">
-                      Farhan Asif Aluminium and Glass Fixing L.L.C.
-                    </p>
-                    <p className="mt-2 text-sm leading-7 text-slate-300">
-                      A more elegant identity for a company that builds refined aluminium,
-                      glass, gate, shutter, and cabinet solutions with a luxury finish.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-9 flex flex-col gap-4 sm:flex-row">
-                  <motion.a
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    href="#contact"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[rgba(216,188,128,0.3)] bg-[linear-gradient(135deg,rgba(216,188,128,0.3),rgba(255,255,255,0.08))] px-7 py-4 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(216,188,128,0.22)]"
-                  >
-                    Request Luxury Quote
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.a>
-                  <motion.a
-                    whileHover={{ y: -3, scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    href="#gallery"
-                    className="glass-outline inline-flex items-center justify-center gap-2 rounded-full px-7 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
-                  >
-                    View Product Gallery
-                  </motion.a>
-                </div>
-
-                <div className="mt-12 grid gap-4 md:grid-cols-3">
-                  {signatureMetrics.map((metric, index) => (
-                    <motion.div
-                      key={metric.value}
-                      custom={index}
-                      initial="hidden"
-                      animate="visible"
-                      variants={fadeInUp}
-                      className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-xl"
-                    >
-                      <p className="font-display text-2xl text-white">{metric.value}</p>
-                      <p className="mt-2 text-sm leading-6 text-slate-300">{metric.label}</p>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96, y: 22 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className="relative flex items-end justify-center lg:justify-end"
-              >
-                <div className="grid w-full max-w-[520px] gap-4 md:grid-cols-[0.8fr_1fr] lg:translate-y-8">
-                  <div className="space-y-4 md:pt-12">
-                    <div className="glass-card rounded-[30px] p-4">
-                      <div className="relative h-[260px] overflow-hidden rounded-[24px]">
-                        <Image
-                          src="gallery/glass-grill-doors.png"
-                          alt="Luxury grill and glass entrance door"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="rounded-[28px] border border-[rgba(216,188,128,0.22)] bg-[linear-gradient(135deg,rgba(15,18,28,0.7),rgba(255,255,255,0.05))] p-5 backdrop-blur-xl">
-                      <p className="text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                        Signature Promise
-                      </p>
-                      <p className="mt-3 text-lg leading-8 text-white">
-                        Beautiful materials, cleaner lines, and installations that feel
-                        premium at first sight.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="glass-card rounded-[34px] p-4">
-                      <div className="relative h-[360px] overflow-hidden rounded-[28px]">
-                        <Image
-                          src="gallery/aluminium-doors-windows.png"
-                          alt="Premium aluminium doors and windows"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(6,12,21,0.55))]" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6">
-                          <p className="text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                            Featured Product
-                          </p>
-                          <p className="mt-2 font-display text-3xl text-white">
-                            Aluminium Doors & Windows
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-xl">
-                        <p className="text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                          Product Range
-                        </p>
-                        <p className="mt-3 text-sm leading-7 text-slate-200">
-                          Partitions, cabinets, shutters, gates, grills, balcony structures,
-                          and custom facade work.
-                        </p>
-                      </div>
-                      <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-xl">
-                        <p className="text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                          Delivery Reach
-                        </p>
-                        <p className="mt-3 text-sm leading-7 text-slate-200">
-                          From Dubai manufacturing and coordination to African market delivery
-                          support.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="about" className="py-20 md:py-28">
-        <div className="section-shell grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={fadeInUp}
-          >
-            <SectionHeader
-              eyebrow="The Brand"
-              title="Less like a contractor. More like a luxury fabrication house."
-              description="The website now leans into beauty, refinement, and presentation so that customers feel they are dealing with a premium company, not a generic supplier."
-            />
-            <div className="max-w-2xl space-y-6 text-base leading-8 text-slate-300 md:text-lg">
-              <p>
-                Farhan Asif Aluminium and Glass Fixing L.L.C. creates elegant aluminium
-                and glass solutions for villas, offices, storefronts, and bespoke spaces.
-                The focus is not only performance, but beauty: polished proportions, luxury
-                material presence, and clean installation.
-              </p>
-              <p>
-                From refined partitions to decorative gates and rolling shutters, each
-                project is approached with an eye for sophistication and a commitment to
-                dependable execution from Dubai to clients across African countries.
-              </p>
-            </div>
-
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-              {craftsmanshipPoints.map((point, index) => (
-                <motion.div
-                  key={point}
-                  custom={index}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  variants={fadeInUp}
-                  className="flex items-start gap-3 rounded-[24px] border border-white/10 bg-white/[0.05] px-4 py-4 backdrop-blur-xl"
-                >
-                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-[color:var(--gold-soft)]" />
-                  <span className="text-sm leading-7 text-slate-200">{point}</span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={fadeInUp}
-            className="relative"
-          >
-            <div className="glass-card rounded-[36px] p-4">
-              <div className="relative h-[520px] overflow-hidden rounded-[30px]">
-                <Image
-                  src="gallery/kitchen-cabinets.png"
-                  alt="Luxury kitchen cabinets by Farhan Asif Aluminium and Glass Fixing"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,13,23,0.08),rgba(7,13,23,0.62))]" />
-              </div>
-            </div>
-
-            <div className="absolute bottom-6 left-6 right-6 rounded-[30px] border border-[rgba(216,188,128,0.24)] bg-[linear-gradient(145deg,rgba(9,15,24,0.9),rgba(19,28,39,0.78))] p-6 backdrop-blur-2xl shadow-[0_20px_60px_rgba(4,8,14,0.48)]">
-              <Quote className="h-8 w-8 text-[color:var(--gold-soft)]" />
-              <p className="mt-4 text-lg leading-9 text-white md:text-[1.35rem]">
-                We do not only fix aluminium and glass. We shape the feeling of a space:
-                how it welcomes, how it reflects light, and how it leaves an impression of
-                quality, beauty, and trust.
-              </p>
-              <div className="mt-5">
-                <p className="font-display text-xl text-white">Farhan Asif</p>
-                <p className="mt-1 text-sm uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                  Director
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <section id="gallery" className="py-20 md:py-28">
-        <div className="section-shell">
-          <SectionHeader
-            eyebrow="Product Gallery"
-            title="A visual gallery of the products we build and deliver."
-            description="Real product imagery makes the brand feel established and trustworthy. This gallery showcases the kind of aluminium and glass work your company is known for."
-          />
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {galleryItems.map((item, index) => (
-              <motion.article
-                key={item.title}
-                custom={index}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.15 }}
-                variants={fadeInUp}
-                whileHover={{ y: -8 }}
-                className={`group relative overflow-hidden rounded-[34px] border border-white/10 ${
-                  index === 0 || index === 3 ? "md:col-span-2" : ""
+          <nav className="hidden items-center gap-6 lg:flex">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors ${
+                  activeSection === link.href
+                    ? "text-gold"
+                    : "text-white/80 hover:text-white"
                 }`}
               >
-                <div className={`relative ${index === 0 || index === 3 ? "h-[420px]" : "h-[360px]"}`}>
-                  <Image src={item.image} alt={item.title} fill className="object-cover transition duration-500 group-hover:scale-[1.04]" />
-                  <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_15%,rgba(6,12,21,0.78)_100%)]" />
-                  <div className="absolute inset-x-0 bottom-0 p-6 md:p-7">
-                    <span className="inline-flex rounded-full border border-white/15 bg-white/[0.08] px-4 py-2 text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)] backdrop-blur-xl">
-                      {item.category}
-                    </span>
-                    <h3 className="mt-4 font-display text-3xl text-white">{item.title}</h3>
-                    <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
-              </motion.article>
+                {link.label}
+              </a>
             ))}
+          </nav>
+
+          <div className="hidden items-center gap-3 md:flex">
+            <LanguageSwitcher />
+            <a href="#quote" className="btn-gold text-sm">
+              {t.nav.getQuote}
+            </a>
+          </div>
+
+          <div className="flex items-center gap-3 md:hidden">
+            <LanguageSwitcher />
+            <button
+              type="button"
+              aria-label={t.nav.toggleMenu}
+              onClick={() => setMenuOpen((value) => !value)}
+              className="text-white"
+            >
+              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
-      </section>
 
-      <section id="services" className="py-20 md:py-28">
-        <div className="section-shell grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={fadeInUp}
-          >
-            <SectionHeader
-              eyebrow="Services"
-              title="A broader service offering, presented with more elegance."
-              description="Instead of stacking everything into heavy boxes, the service section is now cleaner and more editorial while still making the offering easy to scan."
-            />
-            <div className="rounded-[34px] border border-[rgba(216,188,128,0.2)] bg-[linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] p-7 backdrop-blur-2xl">
-              <p className="text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                Signature Scope
-              </p>
-              <p className="mt-4 text-lg leading-8 text-white">
-                Aluminium doors, windows, glass partitions, kitchen cabinets,
-                casting gates, grills, wood doors, rolling shutters, balcony
-                structures, and custom aluminium and glass work.
-              </p>
+        {menuOpen && (
+          <div className="border-t border-white/10 bg-navy px-4 py-4 lg:hidden">
+            {navLinks.map((link) => (
               <a
-                href="#contact"
-                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[color:var(--gold-soft)]"
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="block py-3 text-sm font-medium text-white/80 hover:text-white"
               >
-                Discuss your requirement
+                {link.label}
+              </a>
+            ))}
+            <a href="#quote" onClick={() => setMenuOpen(false)} className="btn-gold mt-3 w-full">
+              {t.nav.getQuote}
+            </a>
+          </div>
+        )}
+      </header>
+
+      <main className="pt-[60px]">
+        <section id="home" className="relative min-h-[560px]">
+          <Image
+            src="gallery/africa-delivery-showcase.png"
+            alt={t.hero.imageAlt}
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-navy/70" />
+          <div className="relative section-shell flex min-h-[560px] flex-col justify-center py-20">
+            <p className="text-sm font-medium text-gold/90">{COMPANY_NAME_AR}</p>
+            <h1 className="mt-3 max-w-4xl font-display text-4xl font-extrabold uppercase leading-tight tracking-wide text-white md:text-5xl lg:text-6xl">
+              {t.hero.companyLine1}
+              <br />
+              {t.hero.companyLine2}
+            </h1>
+            <p className="mt-5 max-w-2xl font-display text-xl font-bold uppercase tracking-wide text-gold md:text-2xl">
+              {t.hero.taglineLine1}{" "}
+              <span className="text-white">{t.hero.taglineLine2}</span>
+            </p>
+            <p className="mt-4 max-w-2xl text-lg text-white/80">{t.hero.subtitle}</p>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <a href="#quote" className="btn-gold">
+                {t.hero.getQuote}
+              </a>
+              <a
+                href="#projects"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-gold"
+              >
+                {t.hero.ourProjects}
                 <ArrowRight className="h-4 w-4" />
               </a>
             </div>
-          </motion.div>
-
-          <div className="space-y-4">
-            {services.map((service, index) => {
-              const Icon = service.icon;
-
-              return (
-                <motion.div
-                  key={service.title}
-                  custom={index}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.15 }}
-                  variants={fadeInUp}
-                  className="group flex gap-4 rounded-[28px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl transition hover:border-[rgba(216,188,128,0.24)] hover:bg-white/[0.06]"
-                >
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] border border-white/10 bg-white/[0.06] text-[color:var(--gold-soft)]">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-display text-2xl text-white">{service.title}</h3>
-                    <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-300">
-                      {service.description}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="reach" className="py-20 md:py-28">
-        <div className="section-shell">
-          <div className="relative overflow-hidden rounded-[40px] border border-white/10">
-            <Image
-              src="gallery/africa-delivery-showcase.png"
-              alt="Delivery and project support across African countries"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(6,12,21,0.9)_10%,rgba(6,12,21,0.72)_45%,rgba(6,12,21,0.78)_100%)]" />
+        <section className="navy-section py-12">
+          <div className="section-shell grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {t.heroFeatures.map((feature, index) => (
+              <FeatureBox
+                key={feature.title}
+                title={feature.title}
+                description={feature.description}
+                icon={heroFeatureIcons[index]}
+                dark
+              />
+            ))}
+          </div>
+        </section>
 
-            <div className="relative grid gap-8 px-6 py-12 md:px-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-14 lg:py-16">
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                variants={fadeInUp}
-              >
-                <span className="inline-flex rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[11px] uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                  Africa Delivery Reach
-                </span>
-                <h2 className="mt-6 max-w-3xl font-display text-4xl font-semibold text-white md:text-5xl">
-                  Products we build in Dubai and deliver across African countries.
-                </h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-                  The company positioning now speaks beyond a local workshop. It presents
-                  Farhan Asif Aluminium and Glass Fixing L.L.C. as a premium fabrication
-                  and delivery partner serving clients with architectural ambition across
-                  multiple African markets.
-                </p>
-              </motion.div>
-
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={fadeInUp}
-                className="grid gap-4 sm:grid-cols-2"
-              >
-                <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-xl">
-                  <Truck className="h-7 w-7 text-[color:var(--gold-soft)]" />
-                  <p className="mt-4 font-display text-2xl text-white">Delivery support</p>
-                  <p className="mt-3 text-sm leading-7 text-slate-200">
-                    Coordinated supply and product movement for aluminium and glass orders.
-                  </p>
-                </div>
-                <div className="rounded-[28px] border border-white/12 bg-white/[0.06] p-5 backdrop-blur-xl">
-                  <Globe className="h-7 w-7 text-[color:var(--gold-soft)]" />
-                  <p className="mt-4 font-display text-2xl text-white">Regional presence</p>
-                  <p className="mt-3 text-sm leading-7 text-slate-200">
-                    A brand story that speaks to clients outside Dubai with confidence.
-                  </p>
-                </div>
-              </motion.div>
+        <section className="white-section py-20">
+          <div className="section-shell grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <SectionLabel>{t.aboutPreview.label}</SectionLabel>
+              <SectionTitle>{t.aboutPreview.title}</SectionTitle>
+              <p className="mt-5 text-base leading-7 text-gray-600">{t.aboutPreview.body}</p>
+              <p className="mt-4 rounded-sm border border-gray-200 bg-off-white px-5 py-4 text-sm italic leading-7 text-gray-700">
+                {t.aboutPreview.servicesNote}
+              </p>
+              <a href="#about" className="btn-gold mt-8">
+                {t.aboutPreview.learnMore}
+              </a>
+            </div>
+            <div className="relative h-[400px] overflow-hidden rounded-sm">
+              <Image
+                src="gallery/aluminium-doors-windows.png"
+                alt={t.aboutPreview.imageAlt}
+                fill
+                className="object-cover image-fade-left"
+              />
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="py-20 md:py-28">
-        <div className="section-shell">
-          <SectionHeader
-            eyebrow="Why Choose Us"
-            title="Premium presentation backed by practical execution."
-            description="This section stays useful, but it is lighter, cleaner, and less visually crowded than before."
-          />
+        <section className="navy-section py-14">
+          <div className="section-shell grid grid-cols-2 gap-8 lg:grid-cols-4">
+            {t.stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="stat-number">{stat.value}</p>
+                <p className="mt-2 text-sm text-white/70">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {reasons.map((reason, index) => {
-              const Icon = reason.icon;
+        <section className="bg-off-white py-20 md:py-24">
+          <div className="section-shell">
+            <div className="mx-auto max-w-4xl rounded-sm border border-gold/40 bg-navy px-6 py-12 text-center shadow-[0_24px_60px_rgba(1,14,36,0.2)] md:px-12 md:py-16">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">
+                {t.director.label}
+              </p>
+              <blockquote className="mt-6 text-lg leading-9 text-white md:text-xl md:leading-10">
+                &ldquo;{t.director.quote}&rdquo;
+              </blockquote>
+              <p className="mt-6 text-base leading-8 text-white/85">{t.director.body}</p>
+              <div className="mt-10 flex flex-col items-center">
+                <span className="h-1 w-20 bg-gold" aria-hidden="true" />
+                <p className="mt-8 font-display text-5xl font-extrabold uppercase tracking-wide text-white md:text-6xl">
+                  {MANAGING_DIRECTOR}
+                </p>
+                <p className="mt-3 font-display text-base font-bold uppercase tracking-[0.35em] text-gold md:text-lg">
+                  {t.director.role}
+                </p>
+                <p className="mt-4 text-sm text-white/70">{COMPANY_NAME}</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
+        <section id="about" className="white-section py-20">
+          <div className="section-shell grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <SectionLabel>{t.about.label}</SectionLabel>
+              <SectionTitle>{t.about.title}</SectionTitle>
+              <p className="mt-5 text-base leading-7 text-gray-600">{t.about.body}</p>
+              <p className="mt-4 text-sm font-medium text-navy">{COMPANY_NAME_AR}</p>
+            </div>
+            <div className="relative h-[380px] overflow-hidden rounded-sm">
+              <Image
+                src="gallery/glass-partitions.png"
+                alt={t.about.imageAlt}
+                fill
+                className="object-cover image-fade-left"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="light-section py-16">
+          <div className="section-shell grid gap-10 md:grid-cols-3">
+            {t.visionMissionValues.map((item, index) => {
+              const Icon = visionMissionIcons[index];
               return (
-                <motion.div
-                  key={reason.title}
-                  custom={index}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  variants={fadeInUp}
-                  className="rounded-[28px] border border-white/10 bg-white/[0.05] p-6 backdrop-blur-xl"
-                >
-                  <Icon className="h-6 w-6 text-[color:var(--gold-soft)]" />
-                  <h3 className="mt-4 font-display text-xl text-white">{reason.title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-slate-300">{reason.description}</p>
-                </motion.div>
+                <div key={item.title} className="text-center">
+                  <div className="feature-icon-wrap mx-auto">
+                    <Icon className="h-10 w-10" strokeWidth={1.5} />
+                  </div>
+                  <h3 className="mt-4 font-display text-base font-bold uppercase text-navy">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-gray-600">{item.description}</p>
+                </div>
               );
             })}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="contact" className="pb-16 pt-20 md:pb-24 md:pt-28">
-        <div className="section-shell">
-          <SectionHeader
-            eyebrow="Contact"
-            title="Start the conversation for your next premium project."
-            description="The contact section remains practical, but now sits inside a stronger luxury brand presentation."
-          />
+        <section className="navy-section py-20">
+          <div className="section-shell grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h2 className="font-display text-3xl font-bold uppercase text-white">
+                {t.whyChooseUs.title}
+              </h2>
+              <ul className="mt-8 space-y-4 text-white/90">
+                {t.whyChooseUs.items.map((item) => (
+                  <CheckListItem key={item}>{item}</CheckListItem>
+                ))}
+              </ul>
+            </div>
+            <div className="relative h-[380px] overflow-hidden rounded-sm">
+              <Image
+                src="gallery/kitchen-cabinets.png"
+                alt={t.about.imageAlt}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
+        </section>
 
-          <div className="grid gap-6 lg:grid-cols-[0.94fr_1.06fr]">
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={fadeInUp}
-              className="glass-card rounded-[34px] p-6 md:p-8"
-            >
-              <div className="space-y-4">
-                {contactDetails.map((item) => {
-                  const Icon = item.icon;
+        <section id="products" className="light-section py-20">
+          <div className="section-shell">
+            <div className="mx-auto max-w-2xl text-center">
+              <SectionLabel>{t.products.label}</SectionLabel>
+              <SectionTitle>{t.products.title}</SectionTitle>
+              <p className="mt-4 text-base leading-7 text-gray-600">{t.products.body}</p>
+            </div>
 
-                  return (
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {t.products.items.map((product, index) => (
+                <article key={product.title} className="product-card">
+                  <div className="relative h-52">
+                    <Image
+                      src={productImages[index]}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-display text-base font-bold text-navy">{product.title}</h3>
+                    <p className="mt-2 text-sm leading-6 text-gray-600">{product.description}</p>
                     <a
-                      key={item.label}
-                      href={item.href}
-                      target={item.label === "Location" ? "_blank" : undefined}
-                      rel={item.label === "Location" ? "noopener noreferrer" : undefined}
-                      className="flex items-start gap-4 rounded-[24px] border border-white/10 bg-white/[0.05] p-4 backdrop-blur-xl transition hover:border-[rgba(216,188,128,0.25)] hover:bg-white/[0.07]"
+                      href="#contact"
+                      className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-navy hover:text-gold"
                     >
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
-                        <Icon className="h-5 w-5 text-[color:var(--gold-soft)]" />
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.28em] text-slate-400">
-                          {item.label}
-                        </p>
-                        <p className="mt-2 text-sm leading-7 text-slate-100">{item.value}</p>
-                      </div>
+                      {t.products.viewDetails}
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </a>
-                  );
-                })}
-              </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              <div className="mt-6 overflow-hidden rounded-[28px] border border-white/10">
-                <iframe
-                  title="Farhan Asif Aluminium and Glass Fixing location"
-                  src="https://www.google.com/maps?q=Frij%20Al%20Murar%2C%20Near%20Latif%20Mosque%2C%20Deira%2C%20Dubai%20-%20UAE&output=embed"
-                  className="h-[320px] w-full"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
+        <section className="navy-section py-12">
+          <div className="section-shell flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <h2 className="font-display text-xl font-bold uppercase text-white md:text-2xl">
+                {t.productsCta.title}
+              </h2>
+              <p className="mt-2 text-sm text-white/70">{t.productsCta.body}</p>
+            </div>
+            <a href="#quote" className="btn-gold shrink-0">
+              {t.productsCta.button}
+            </a>
+          </div>
+        </section>
+
+        <section id="services" className="white-section py-20">
+          <div className="section-shell">
+            <div className="grid items-start gap-12 lg:grid-cols-2">
+              <div>
+                <SectionLabel>{t.services.label}</SectionLabel>
+                <SectionTitle>{t.services.title}</SectionTitle>
+                <p className="mt-4 text-base leading-7 text-gray-600">{t.services.body}</p>
+              </div>
+              <div className="relative h-64 overflow-hidden rounded-sm lg:h-72">
+                <Image
+                  src="gallery/wood-doors-windows.png"
+                  alt={t.services.imageAlt}
+                  fill
+                  className="object-cover"
                 />
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={fadeInUp}
-              className="glass-card rounded-[34px] p-7 md:p-8"
-            >
-              <p className="text-sm uppercase tracking-[0.35em] text-[color:var(--gold-soft)]">
-                Enquiry Form
-              </p>
-              <h3 className="mt-4 font-display text-3xl font-semibold text-white">
-                Request a quote, product supply, or delivery discussion.
-              </h3>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-slate-300">
-                The form is ready for connection to your preferred email, CRM, or lead
-                collection workflow when you are ready to launch.
-              </p>
+            <div className="mt-12 rounded-sm border border-gray-200 bg-white p-6 md:p-8">
+              {t.services.items.map((service, index) => {
+                const Icon = serviceIcons[index];
+                return (
+                  <div key={service.title} className="service-row">
+                    <div className="feature-icon-wrap shrink-0">
+                      <Icon className="h-7 w-7" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-base font-bold text-navy">{service.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-gray-600">{service.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
 
-              <form className="mt-8 space-y-5">
-                <div>
-                  <label htmlFor="name" className="mb-2 block text-sm font-medium text-slate-200">
-                    Name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your name"
-                    className="glass-outline w-full rounded-2xl px-4 py-4 text-white outline-none placeholder:text-slate-400 focus:border-[rgba(216,188,128,0.4)] focus:bg-white/10"
-                  />
+        <section className="navy-section py-14">
+          <div className="section-shell grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {t.serviceFeatures.map((feature, index) => (
+              <FeatureBox
+                key={feature.title}
+                title={feature.title}
+                description={feature.description}
+                icon={serviceFeatureIcons[index]}
+                dark
+              />
+            ))}
+          </div>
+        </section>
+
+        <section id="quote" className="light-section py-20">
+          <div className="section-shell">
+            <SectionLabel>{t.quote.label}</SectionLabel>
+            <SectionTitle>{t.quote.title}</SectionTitle>
+            <p className="mt-3 max-w-2xl text-base text-gray-600">{t.quote.body}</p>
+
+            <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+              <form className="space-y-5 rounded-sm border border-gray-200 bg-white p-6 md:p-8">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="quote-name" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.quote.fullName}
+                    </label>
+                    <input
+                      id="quote-name"
+                      type="text"
+                      placeholder={t.contact.form.namePlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="quote-email" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.quote.email}
+                    </label>
+                    <input
+                      id="quote-email"
+                      type="email"
+                      placeholder={t.contact.form.emailPlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="quote-phone" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.quote.phone}
+                    </label>
+                    <input
+                      id="quote-phone"
+                      type="tel"
+                      placeholder={t.contact.form.phonePlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="quote-type" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.quote.projectType}
+                    </label>
+                    <select id="quote-type" className="form-input">
+                      <option value="">{t.quote.selectProjectType}</option>
+                      {t.quote.projectTypes.map((type) => (
+                        <option key={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div>
-                  <label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-200">
-                    Phone
+                  <label htmlFor="quote-service" className="mb-1.5 block text-sm font-medium text-navy">
+                    {t.quote.serviceRequired}
                   </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="+971"
-                    className="glass-outline w-full rounded-2xl px-4 py-4 text-white outline-none placeholder:text-slate-400 focus:border-[rgba(216,188,128,0.4)] focus:bg-white/10"
-                  />
+                  <select id="quote-service" className="form-input">
+                    <option value="">{t.quote.selectService}</option>
+                    {t.footer.serviceItems.map((service) => (
+                      <option key={service}>{service}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label htmlFor="message" className="mb-2 block text-sm font-medium text-slate-200">
-                    Message
+                  <label htmlFor="quote-details" className="mb-1.5 block text-sm font-medium text-navy">
+                    {t.quote.projectDetails}
                   </label>
                   <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    placeholder="Tell us about your project or product requirements"
-                    className="glass-outline w-full rounded-2xl px-4 py-4 text-white outline-none placeholder:text-slate-400 focus:border-[rgba(216,188,128,0.4)] focus:bg-white/10"
+                    id="quote-details"
+                    rows={4}
+                    placeholder={t.contact.form.messagePlaceholder}
+                    className="form-input resize-none"
                   />
                 </div>
-                <button
-                  type="button"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[rgba(216,188,128,0.28)] bg-[linear-gradient(135deg,rgba(216,188,128,0.26),rgba(255,255,255,0.08))] px-6 py-4 text-sm font-semibold text-white shadow-[0_12px_40px_rgba(216,188,128,0.18)] transition hover:shadow-[0_18px_50px_rgba(216,188,128,0.24)]"
-                >
-                  Send Enquiry
-                  <ArrowRight className="h-4 w-4" />
+                <button type="button" className="btn-gold w-full py-3.5">
+                  {t.quote.sendRequest}
                 </button>
               </form>
-            </motion.div>
-          </div>
-        </div>
-      </section>
 
-      <footer className="pb-8">
-        <div className="section-shell">
-          <div className="glass-card rounded-[34px] px-6 py-8 md:px-8">
-            <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-5">
-                <MonogramLogo />
-                <div>
-                  <p className="text-sm text-slate-200">{arabicCompanyTitle}</p>
-                  <p className="font-display text-2xl font-semibold text-white">
-                    Farhan Asif Aluminium and Glass Fixing L.L.C.
-                  </p>
-                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-                    Premium aluminium, glass, cabinet, grill, and shutter solutions
-                    shaped in Dubai and positioned for clients across African countries.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:min-w-[420px]">
-                <div className="flex flex-wrap gap-3 text-sm text-slate-200">
-                  {navLinks.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      className="rounded-full px-3 py-2 transition hover:bg-white/10 hover:text-white"
-                    >
-                      {link.label}
-                    </a>
+              <div className="navy-section relative overflow-hidden rounded-sm p-6 md:p-8">
+                <h3 className="font-display text-lg font-bold uppercase text-white">
+                  {t.quote.whyTitle}
+                </h3>
+                <ul className="mt-6 space-y-3 text-white/90">
+                  {t.quote.benefits.map((benefit) => (
+                    <CheckListItem key={benefit}>{benefit}</CheckListItem>
                   ))}
-                </div>
-                <div className="flex items-center gap-3">
-                  {[
-                    { href: "tel:+971528903210", label: "Phone", icon: Phone },
-                    { href: "mailto:asif.farhanasif@yahoo.com", label: "Email", icon: Mail },
-                    { href: "https://wa.me/971528903210", label: "WhatsApp", icon: MessageCircle },
-                  ].map((item) => {
-                    const Icon = item.icon;
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-                    return (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        target={item.label === "WhatsApp" ? "_blank" : undefined}
-                        rel={item.label === "WhatsApp" ? "noopener noreferrer" : undefined}
-                        aria-label={item.label}
-                        className="glass-outline flex h-11 w-11 items-center justify-center rounded-2xl text-slate-100 transition hover:bg-white/[0.12] hover:text-white"
-                      >
-                        <Icon className="h-5 w-5" />
+        <section id="projects" className="white-section py-20">
+          <div className="section-shell">
+            <SectionLabel>{t.projects.label}</SectionLabel>
+            <SectionTitle>{t.projects.title}</SectionTitle>
+            <p className="mt-4 max-w-2xl text-base text-gray-600">{t.projects.body}</p>
+
+            <div className="mt-8 flex flex-wrap gap-6 border-b border-gray-200 pb-4">
+              {projectFilters.map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  onClick={() => setProjectFilter(filter)}
+                  className={`filter-tab ${projectFilter === filter ? "active" : ""}`}
+                >
+                  {t.projects.filters[filter]}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-8 columns-1 gap-4 sm:columns-2 lg:columns-3">
+              {filteredProjects.map((project) => (
+                <div key={project.title} className="mb-4 break-inside-avoid overflow-hidden rounded-sm">
+                  <div className="relative aspect-[4/3]">
+                    <Image
+                      src={project.image}
+                      alt={project.title}
+                      fill
+                      className="object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="navy-section relative overflow-hidden py-16">
+          <div className="section-shell relative z-10">
+            <h2 className="text-center font-display text-xl font-bold uppercase tracking-wide text-white md:text-2xl">
+              {t.dubaiAreas.title}
+            </h2>
+            <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
+              {t.dubaiAreas.areas.map((area) => (
+                <div key={area} className="text-center">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-gold/40 text-gold">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <p className="mt-3 text-xs font-medium text-white/80">{area}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="light-section py-20">
+          <div className="section-shell">
+            <div className="grid gap-12 lg:grid-cols-2">
+              <div>
+                <SectionLabel>{t.contact.label}</SectionLabel>
+                <SectionTitle>{t.contact.title}</SectionTitle>
+                <p className="mt-4 text-base leading-7 text-gray-600">{t.contact.body}</p>
+
+                <div className="mt-8 space-y-5">
+                  {contactInfo.map((item) => {
+                    const Icon = item.icon;
+                    const content = (
+                      <div className="flex items-start gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-navy text-gold">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-navy">{item.label}</p>
+                          <p className="mt-1 text-sm text-gray-600">{item.value}</p>
+                        </div>
+                      </div>
+                    );
+
+                    return item.href ? (
+                      <a key={item.label} href={item.href} className="block hover:opacity-80">
+                        {content}
                       </a>
+                    ) : (
+                      <div key={item.label}>{content}</div>
                     );
                   })}
                 </div>
               </div>
+
+              <form className="rounded-sm border border-gray-200 bg-white p-6 md:p-8">
+                <div className="space-y-5">
+                  <div>
+                    <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.contact.form.fullName}
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      placeholder={t.contact.form.namePlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-email" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.contact.form.email}
+                    </label>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      placeholder={t.contact.form.emailPlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-phone" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.contact.form.phone}
+                    </label>
+                    <input
+                      id="contact-phone"
+                      type="tel"
+                      placeholder={t.contact.form.phonePlaceholder}
+                      className="form-input"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-navy">
+                      {t.contact.form.message}
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      rows={4}
+                      placeholder={t.contact.form.messagePlaceholder}
+                      className="form-input resize-none"
+                    />
+                  </div>
+                  <button type="button" className="btn-gold w-full py-3.5">
+                    {t.contact.form.sendMessage}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div className="mt-12 overflow-hidden rounded-sm border border-gray-200">
+              <iframe
+                title={t.contact.mapTitle}
+                src="https://www.google.com/maps?q=Frij%20Al%20Murar%2C%20Near%20Latifa%20Mosque%2C%20Deira%2C%20Dubai%20-%20UAE&output=embed"
+                className="h-[400px] w-full"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="navy-section pt-16 pb-6">
+        <div className="section-shell">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <CompanyLogo onDark alt={t.common.logoAlt} />
+              <p className="mt-4 text-sm leading-6 text-white/70">
+                {t.footer.body}{" "}
+                <strong className="font-semibold text-white">{MANAGING_DIRECTOR}</strong>,{" "}
+                {t.footer.role}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-display text-sm font-bold uppercase tracking-wide text-gold">
+                {t.footer.quickLinks}
+              </h3>
+              <ul className="mt-4 space-y-2.5">
+                {footerLinkHrefs.map((link) => (
+                  <li key={link.key}>
+                    <a href={link.href} className="text-sm text-white/70 hover:text-white">
+                      {t.footer.links[link.key]}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-display text-sm font-bold uppercase tracking-wide text-gold">
+                {t.footer.ourProducts}
+              </h3>
+              <ul className="mt-4 space-y-2.5">
+                {t.footer.productItems.map((item) => (
+                  <li key={item}>
+                    <a href="#products" className="text-sm text-white/70 hover:text-white">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-display text-sm font-bold uppercase tracking-wide text-gold">
+                {t.footer.ourServices}
+              </h3>
+              <ul className="mt-4 space-y-2.5">
+                {t.footer.serviceItems.map((item) => (
+                  <li key={item}>
+                    <a href="#services" className="text-sm text-white/70 hover:text-white">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+            <p className="text-xs text-white/50">
+              &copy; {new Date().getFullYear()} {COMPANY_NAME} {t.footer.rights}
+            </p>
+            <div className="flex gap-4 text-xs text-white/50">
+              <a href="#" className="hover:text-white">
+                {t.footer.privacy}
+              </a>
+              <span>|</span>
+              <a href="#" className="hover:text-white">
+                {t.footer.terms}
+              </a>
             </div>
           </div>
         </div>
@@ -1085,19 +885,12 @@ export default function Home() {
         href="https://wa.me/971528903210"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Chat on WhatsApp"
-        className="whatsapp-float group"
+        aria-label={t.common.whatsapp}
+        className="whatsapp-float"
       >
-        <span className="whatsapp-float__icon">
-          <MessageCircle className="h-5 w-5 text-emerald-200" />
-        </span>
-        <span className="whatsapp-float__label">
-          <span className="block text-[11px] uppercase tracking-[0.3em] text-emerald-100/80">
-            WhatsApp
-          </span>
-          <span className="block text-sm font-semibold">+971 52 890 3210</span>
-        </span>
+        <MessageCircle className="h-5 w-5" />
+        <span className="hidden text-sm font-semibold sm:inline">+971 52 890 3210</span>
       </a>
-    </main>
+    </>
   );
 }

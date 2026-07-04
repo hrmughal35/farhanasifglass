@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Manrope, Sora } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
+import { LanguageProvider } from "./components/language-provider";
 import "./globals.css";
 
-const manrope = Manrope({
-  variable: "--font-manrope",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const sora = Sora({
-  variable: "--font-sora",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -25,6 +27,10 @@ export const metadata: Metadata = {
     "kitchen cabinets Dubai",
     "custom aluminium work Dubai",
   ],
+  icons: {
+    icon: "/gallery/Logo.png",
+    apple: "/gallery/Logo.png",
+  },
   openGraph: {
     title: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
     description:
@@ -32,6 +38,14 @@ export const metadata: Metadata = {
     siteName: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
     type: "website",
     locale: "en_AE",
+    images: [
+      {
+        url: "/gallery/Logo.png",
+        width: 1024,
+        height: 1024,
+        alt: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
+      },
+    ],
   },
 };
 
@@ -43,10 +57,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${sora.variable} h-full antialiased`}
+      className={`${inter.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

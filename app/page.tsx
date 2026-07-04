@@ -29,6 +29,8 @@ import {
 } from "./lib/i18n/translations";
 
 const LOGO_SRC = "gallery/logo.png";
+const DEVELOPER_LINKEDIN = "https://www.linkedin.com/in/welcometohassanraza/";
+const DEVELOPER_PORTFOLIO = "https://hassanrazadev.tech";
 
 const heroFeatureIcons = [Shield, Users, Clock, Wrench];
 const visionMissionIcons = [Target, Building2, Shield];
@@ -181,8 +183,8 @@ export default function Home() {
     },
     {
       label: t.contact.labels.phoneAlt,
-      value: "+971 52 136 5299",
-      href: "tel:+971521365299",
+      value: "+971 55 847 1074",
+      href: "tel:+971558471074",
       icon: contactIcons[1],
     },
     {
@@ -864,7 +866,34 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
+          <div className="mt-12 rounded-sm border border-gold/35 bg-[linear-gradient(135deg,rgba(196,160,82,0.12),rgba(255,255,255,0.04))] px-6 py-8 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-gold">
+              {t.footer.developedBy}
+            </p>
+            <p className="mt-3 font-display text-2xl font-bold text-white md:text-3xl">
+              {t.footer.developerName}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+              <a
+                href={DEVELOPER_LINKEDIN}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-w-[140px] items-center justify-center rounded-sm border border-gold bg-gold px-5 py-3 text-sm font-bold text-navy transition hover:bg-gold-hover"
+              >
+                {t.footer.linkedin}
+              </a>
+              <a
+                href={DEVELOPER_PORTFOLIO}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-w-[180px] items-center justify-center rounded-sm border border-white/25 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:border-gold hover:text-gold"
+              >
+                {t.footer.portfolio}
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:flex-row">
             <p className="text-xs text-white/50">
               &copy; {new Date().getFullYear()} {COMPANY_NAME} {t.footer.rights}
             </p>

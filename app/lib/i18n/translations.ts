@@ -145,6 +145,10 @@ export type Translations = {
     rights: string;
     privacy: string;
     terms: string;
+    developedBy: string;
+    developerName: string;
+    linkedin: string;
+    portfolio: string;
   };
   common: {
     logoAlt: string;
@@ -388,6 +392,10 @@ export const translations: Record<Language, Translations> = {
       rights: "All Rights Reserved.",
       privacy: "Privacy Policy",
       terms: "Terms & Conditions",
+      developedBy: "Website Designed & Developed by",
+      developerName: "Hassan Raza",
+      linkedin: "LinkedIn",
+      portfolio: "hassanrazadev.tech",
     },
     common: {
       logoAlt: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
@@ -629,6 +637,10 @@ export const translations: Record<Language, Translations> = {
       rights: "Tous Droits Réservés.",
       privacy: "Politique de Confidentialité",
       terms: "Conditions Générales",
+      developedBy: "Site Web Conçu et Développé par",
+      developerName: "Hassan Raza",
+      linkedin: "LinkedIn",
+      portfolio: "hassanrazadev.tech",
     },
     common: {
       logoAlt: "Farhan Asif Aluminium and Glass Fixing L.L.C.",

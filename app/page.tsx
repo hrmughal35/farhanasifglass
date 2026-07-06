@@ -33,6 +33,12 @@ import {
   COMPANY_NAME_AR,
   MANAGING_DIRECTOR,
 } from "./lib/i18n/translations";
+import {
+  buildContactWhatsAppMessage,
+  buildQuoteWhatsAppMessage,
+  buildWhatsAppUrl,
+  openWhatsApp,
+} from "./lib/whatsapp";
 
 const LOGO_SRC = "gallery/logo.png";
 const DEVELOPER_LINKEDIN = "https://www.linkedin.com/in/welcometohassanraza/";
@@ -151,6 +157,64 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("#home");
   const [projectFilter, setProjectFilter] = useState<ProjectFilter>("All");
   const [activeProductIndex, setActiveProductIndex] = useState<number | null>(null);
+  const [quoteForm, setQuoteForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    projectType: "",
+    service: "",
+    details: "",
+  });
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+  const [quoteFormError, setQuoteFormError] = useState<string | null>(null);
+  const [contactFormError, setContactFormError] = useState<string | null>(null);
+
+  const handleQuoteSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setQuoteFormError(null);
+
+    const { name, email, phone, projectType, service, details } = quoteForm;
+    if (!name.trim() || !email.trim() || !phone.trim() || !projectType || !service) {
+      setQuoteFormError(t.forms.requiredError);
+      return;
+    }
+
+    openWhatsApp(
+      buildQuoteWhatsAppMessage({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        projectType,
+        service,
+        details: details.trim(),
+      }),
+    );
+  };
+
+  const handleContactSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setContactFormError(null);
+
+    const { name, email, phone, message } = contactForm;
+    if (!name.trim() || !email.trim() || !phone.trim() || !message.trim()) {
+      setContactFormError(t.forms.requiredError);
+      return;
+    }
+
+    openWhatsApp(
+      buildContactWhatsAppMessage({
+        name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        message: message.trim(),
+      }),
+    );
+  };
 
   const navLinks = navHrefs.map((item) => ({
     href: item.href,
@@ -568,7 +632,10 @@ export default function Home() {
             <p className="mt-3 max-w-2xl text-base text-gray-600">{t.quote.body}</p>
 
             <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-              <form className="space-y-5 rounded-sm border border-gray-200 bg-white p-6 md:p-8">
+              <form
+                className="space-y-5 rounded-sm border border-gray-200 bg-white p-6 md:p-8"
+                onSubmit={handleQuoteSubmit}
+              >
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div>
                     <label htmlFor="quote-name" className="mb-1.5 block text-sm font-medium text-navy">
@@ -577,6 +644,11 @@ export default function Home() {
                     <input
                       id="quote-name"
                       type="text"
+                      required
+                      value={quoteForm.name}
+                      onChange={(event) =>
+                        setQuoteForm((current) => ({ ...current, name: event.target.value }))
+                      }
                       placeholder={t.contact.form.namePlaceholder}
                       className="form-input"
                     />
@@ -588,6 +660,11 @@ export default function Home() {
                     <input
                       id="quote-email"
                       type="email"
+                      required
+                      value={quoteForm.email}
+                      onChange={(event) =>
+                        setQuoteForm((current) => ({ ...current, email: event.target.value }))
+                      }
                       placeholder={t.contact.form.emailPlaceholder}
                       className="form-input"
                     />
@@ -599,6 +676,11 @@ export default function Home() {
                     <input
                       id="quote-phone"
                       type="tel"
+                      required
+                      value={quoteForm.phone}
+                      onChange={(event) =>
+                        setQuoteForm((current) => ({ ...current, phone: event.target.value }))
+                      }
                       placeholder={t.contact.form.phonePlaceholder}
                       className="form-input"
                     />
@@ -607,10 +689,20 @@ export default function Home() {
                     <label htmlFor="quote-type" className="mb-1.5 block text-sm font-medium text-navy">
                       {t.quote.projectType}
                     </label>
-                    <select id="quote-type" className="form-input">
+                    <select
+                      id="quote-type"
+                      required
+                      value={quoteForm.projectType}
+                      onChange={(event) =>
+                        setQuoteForm((current) => ({ ...current, projectType: event.target.value }))
+                      }
+                      className="form-input"
+                    >
                       <option value="">{t.quote.selectProjectType}</option>
                       {t.quote.projectTypes.map((type) => (
-                        <option key={type}>{type}</option>
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -619,10 +711,20 @@ export default function Home() {
                   <label htmlFor="quote-service" className="mb-1.5 block text-sm font-medium text-navy">
                     {t.quote.serviceRequired}
                   </label>
-                  <select id="quote-service" className="form-input">
+                  <select
+                    id="quote-service"
+                    required
+                    value={quoteForm.service}
+                    onChange={(event) =>
+                      setQuoteForm((current) => ({ ...current, service: event.target.value }))
+                    }
+                    className="form-input"
+                  >
                     <option value="">{t.quote.selectService}</option>
                     {t.footer.serviceItems.map((service) => (
-                      <option key={service}>{service}</option>
+                      <option key={service} value={service}>
+                        {service}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -633,11 +735,21 @@ export default function Home() {
                   <textarea
                     id="quote-details"
                     rows={4}
+                    value={quoteForm.details}
+                    onChange={(event) =>
+                      setQuoteForm((current) => ({ ...current, details: event.target.value }))
+                    }
                     placeholder={t.contact.form.messagePlaceholder}
                     className="form-input resize-none"
                   />
                 </div>
-                <button type="button" className="btn-gold w-full py-3.5">
+                {quoteFormError ? (
+                  <p className="text-sm font-medium text-red-600" role="alert">
+                    {quoteFormError}
+                  </p>
+                ) : null}
+                <p className="text-xs text-gray-500">{t.forms.whatsappHint}</p>
+                <button type="submit" className="btn-gold w-full py-3.5">
                   {t.quote.sendRequest}
                 </button>
               </form>
@@ -744,7 +856,10 @@ export default function Home() {
                 </div>
               </div>
 
-              <form className="rounded-sm border border-gray-200 bg-white p-6 md:p-8">
+              <form
+                className="rounded-sm border border-gray-200 bg-white p-6 md:p-8"
+                onSubmit={handleContactSubmit}
+              >
                 <div className="space-y-5">
                   <div>
                     <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-navy">
@@ -753,6 +868,11 @@ export default function Home() {
                     <input
                       id="contact-name"
                       type="text"
+                      required
+                      value={contactForm.name}
+                      onChange={(event) =>
+                        setContactForm((current) => ({ ...current, name: event.target.value }))
+                      }
                       placeholder={t.contact.form.namePlaceholder}
                       className="form-input"
                     />
@@ -764,6 +884,11 @@ export default function Home() {
                     <input
                       id="contact-email"
                       type="email"
+                      required
+                      value={contactForm.email}
+                      onChange={(event) =>
+                        setContactForm((current) => ({ ...current, email: event.target.value }))
+                      }
                       placeholder={t.contact.form.emailPlaceholder}
                       className="form-input"
                     />
@@ -775,6 +900,11 @@ export default function Home() {
                     <input
                       id="contact-phone"
                       type="tel"
+                      required
+                      value={contactForm.phone}
+                      onChange={(event) =>
+                        setContactForm((current) => ({ ...current, phone: event.target.value }))
+                      }
                       placeholder={t.contact.form.phonePlaceholder}
                       className="form-input"
                     />
@@ -786,11 +916,22 @@ export default function Home() {
                     <textarea
                       id="contact-message"
                       rows={4}
+                      required
+                      value={contactForm.message}
+                      onChange={(event) =>
+                        setContactForm((current) => ({ ...current, message: event.target.value }))
+                      }
                       placeholder={t.contact.form.messagePlaceholder}
                       className="form-input resize-none"
                     />
                   </div>
-                  <button type="button" className="btn-gold w-full py-3.5">
+                  {contactFormError ? (
+                    <p className="text-sm font-medium text-red-600" role="alert">
+                      {contactFormError}
+                    </p>
+                  ) : null}
+                  <p className="text-xs text-gray-500">{t.forms.whatsappHint}</p>
+                  <button type="submit" className="btn-gold w-full py-3.5">
                     {t.contact.form.sendMessage}
                   </button>
                 </div>
@@ -922,7 +1063,7 @@ export default function Home() {
       )}
 
       <a
-        href="https://wa.me/971528903210"
+        href={buildWhatsAppUrl("Hello, I would like to inquire about your aluminium and glass services.")}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={t.common.whatsapp}

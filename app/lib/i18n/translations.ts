@@ -155,6 +155,10 @@ export type Translations = {
     logoAlt: string;
     whatsapp: string;
   };
+  forms: {
+    requiredError: string;
+    whatsappHint: string;
+  };
 };
 
 export const translations: Record<Language, Translations> = {
@@ -403,6 +407,10 @@ export const translations: Record<Language, Translations> = {
       logoAlt: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
       whatsapp: "Chat on WhatsApp",
     },
+    forms: {
+      requiredError: "Please fill in all required fields before sending.",
+      whatsappHint: "You will be redirected to WhatsApp to send your message to our team.",
+    },
   },
   fr: {
     languagePicker: {
@@ -648,6 +656,10 @@ export const translations: Record<Language, Translations> = {
     common: {
       logoAlt: "Farhan Asif Aluminium and Glass Fixing L.L.C.",
       whatsapp: "Discuter sur WhatsApp",
+    },
+    forms: {
+      requiredError: "Veuillez remplir tous les champs obligatoires avant d'envoyer.",
+      whatsappHint: "Vous serez redirigé vers WhatsApp pour envoyer votre message à notre équipe.",
     },
   },
 };

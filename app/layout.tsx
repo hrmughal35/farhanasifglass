@@ -15,6 +15,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.farhanasifaluminiumandglassllc.com"),
   title: "Farhan Asif Aluminium and Glass Fixing L.L.C. | Premium Aluminium & Glass Solutions in Dubai",
   description:
     "Dubai-based specialists in premium aluminium doors and windows, glass partitions, balcony structures, rolling shutters, kitchen cabinets, and custom aluminium and glass fabrication.",
@@ -28,8 +29,8 @@ export const metadata: Metadata = {
     "custom aluminium work Dubai",
   ],
   icons: {
-    icon: "/gallery/logo.png",
-    apple: "/gallery/logo.png",
+    icon: [{ url: "/gallery/logo.png", type: "image/png" }],
+    apple: [{ url: "/gallery/logo.png", type: "image/png" }],
   },
   openGraph: {
     title: "Farhan Asif Aluminium and Glass Fixing L.L.C.",

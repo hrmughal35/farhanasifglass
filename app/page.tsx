@@ -21,7 +21,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import LanguageSwitcher from "./components/language-switcher";
+import ProductGalleryModal from "./components/product-gallery-modal";
 import { useLanguage } from "./components/language-provider";
+import {
+  PRODUCT_GALLERY_KEYS,
+  getProductCoverImage,
+  productGalleries,
+} from "./lib/product-galleries";
 import {
   COMPANY_NAME,
   COMPANY_NAME_AR,
@@ -38,19 +44,6 @@ const serviceIcons = [Truck, Building2, Building2, Wrench];
 const serviceFeatureIcons = [Users, Wrench, Shield, Clock];
 const contactIcons = [Phone, Phone, Mail, MapPin, Clock];
 
-const productImages = [
-  "gallery/glass-grill-doors.png",
-  "gallery/aluminium-doors-windows.png",
-  "gallery/wood-doors-windows.png",
-  "gallery/africa-delivery-showcase.png",
-  "gallery/glass-partitions.png",
-  "gallery/glass-grill-doors.png",
-  "gallery/kitchen-cabinets.png",
-  "gallery/casting-gates-grills.png",
-  "gallery/wood-doors-windows.png",
-  "gallery/rolling-shutters.png",
-];
-
 const projectFilters = ["All", "Residential", "Commercial", "Hospitality", "Industrial"] as const;
 type ProjectFilter = (typeof projectFilters)[number];
 
@@ -58,7 +51,7 @@ const projectMeta: { category: ProjectFilter; image: string }[] = [
   { category: "Residential", image: "gallery/aluminium-doors-windows.png" },
   { category: "Commercial", image: "gallery/glass-partitions.png" },
   { category: "Commercial", image: "gallery/kitchen-cabinets.png" },
-  { category: "Residential", image: "gallery/africa-delivery-showcase.png" },
+  { category: "Residential", image: "gallery/products/balcony-staircase/01.jpg" },
   { category: "Hospitality", image: "gallery/glass-grill-doors.png" },
   { category: "Industrial", image: "gallery/rolling-shutters.png" },
 ];
@@ -157,6 +150,7 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("#home");
   const [projectFilter, setProjectFilter] = useState<ProjectFilter>("All");
+  const [activeProductIndex, setActiveProductIndex] = useState<number | null>(null);
 
   const navLinks = navHrefs.map((item) => ({
     href: item.href,
@@ -290,7 +284,7 @@ export default function Home() {
       <main className="pt-[60px]">
         <section id="home" className="relative min-h-[560px]">
           <Image
-            src="gallery/africa-delivery-showcase.png"
+            src="gallery/products/aluminium-windows/01.jpg"
             alt={t.hero.imageAlt}
             fill
             priority
@@ -467,29 +461,37 @@ export default function Home() {
             </div>
 
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {t.products.items.map((product, index) => (
-                <article key={product.title} className="product-card">
-                  <div className="relative h-52">
-                    <Image
-                      src={productImages[index]}
-                      alt={product.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="font-display text-base font-bold text-navy">{product.title}</h3>
-                    <p className="mt-2 text-sm leading-6 text-gray-600">{product.description}</p>
-                    <a
-                      href="#contact"
-                      className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-navy hover:text-gold"
+              {t.products.items.map((product, index) => {
+                const galleryKey = PRODUCT_GALLERY_KEYS[index];
+                const coverImage = getProductCoverImage(galleryKey);
+
+                return (
+                  <article key={product.title} className="product-card">
+                    <button
+                      type="button"
+                      onClick={() => setActiveProductIndex(index)}
+                      className="group block w-full text-left"
                     >
-                      {t.products.viewDetails}
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </a>
-                  </div>
-                </article>
-              ))}
+                      <div className="relative h-52 overflow-hidden">
+                        <Image
+                          src={coverImage}
+                          alt={product.title}
+                          fill
+                          className="object-cover transition duration-300 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-display text-base font-bold text-navy">{product.title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-gray-600">{product.description}</p>
+                        <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-navy group-hover:text-gold">
+                          {t.products.viewDetails}
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    </button>
+                  </article>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -909,6 +911,15 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {activeProductIndex !== null && (
+        <ProductGalleryModal
+          title={t.products.items[activeProductIndex].title}
+          images={productGalleries[PRODUCT_GALLERY_KEYS[activeProductIndex]]}
+          closeLabel={t.products.closeGallery}
+          onClose={() => setActiveProductIndex(null)}
+        />
+      )}
 
       <a
         href="https://wa.me/971528903210"

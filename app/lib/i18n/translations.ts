@@ -56,6 +56,7 @@ export type Translations = {
     title: string;
     body: string;
     viewDetails: string;
+    closeGallery: string;
     items: { title: string; description: string }[];
   };
   productsCta: {
@@ -248,7 +249,8 @@ export const translations: Record<Language, Translations> = {
       label: "Our Products",
       title: "Premium Aluminium & Glass Products",
       body: "As stated on our official company profile, we manufacture and supply a complete range of aluminium and glass products for homes, offices, and commercial projects throughout Dubai.",
-      viewDetails: "View Details",
+      viewDetails: "View Gallery",
+      closeGallery: "Close gallery",
       items: [
         { title: "Aluminium Doors", description: "Custom-built aluminium entrance and sliding door systems." },
         { title: "Aluminium Windows", description: "Modern window framing for villas, offices, and commercial spaces." },
@@ -493,7 +495,8 @@ export const translations: Record<Language, Translations> = {
       label: "Nos Produits",
       title: "Produits Premium en Aluminium et Verre",
       body: "Comme indiqué sur notre profil officiel, nous fabriquons et fournissons une gamme complète de produits en aluminium et verre pour les maisons, bureaux et projets commerciaux à Dubaï.",
-      viewDetails: "Voir les Détails",
+      viewDetails: "Voir la Galerie",
+      closeGallery: "Fermer la galerie",
       items: [
         { title: "Portes en Aluminium", description: "Portes d'entrée et coulissantes en aluminium sur mesure." },
         { title: "Fenêtres en Aluminium", description: "Encadrements modernes pour villas, bureaux et espaces commerciaux." },

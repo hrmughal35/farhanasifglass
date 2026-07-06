@@ -29,8 +29,9 @@ export const metadata: Metadata = {
     "custom aluminium work Dubai",
   ],
   icons: {
-    icon: [{ url: "/gallery/logo.png", type: "image/png" }],
-    apple: [{ url: "/gallery/logo.png", type: "image/png" }],
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    shortcut: [{ url: "/favicon.png", type: "image/png" }],
   },
   openGraph: {
     title: "Farhan Asif Aluminium and Glass Fixing L.L.C.",

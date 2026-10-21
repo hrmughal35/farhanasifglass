@@ -11,6 +11,8 @@ export type QuotationItem = {
   quantity: string;
   amount: string;
   amountB: string;
+  /** Manually entered line amount; when non-empty it replaces quantity × unit price in single-price mode. */
+  total?: string;
 };
 
 export type Quotation = {

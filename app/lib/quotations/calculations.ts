@@ -16,6 +16,14 @@ export function lineTotal(item: QuotationItem, option: "A" | "B" = "A"): number 
   return price * itemQuantity(item);
 }
 
+export function hasManualAmount(item: QuotationItem): boolean {
+  return item.total !== undefined && item.total.trim() !== "";
+}
+
+export function singleLineAmount(item: QuotationItem): number {
+  return hasManualAmount(item) ? toNumber(item.total) : lineTotal(item, "A");
+}
+
 export type QuotationTotals = {
   subtotalA: number;
   subtotalB: number;
@@ -30,11 +38,14 @@ export type QuotationTotals = {
 };
 
 export function calculateTotals(quotation: Quotation): QuotationTotals {
-  const subtotalA = quotation.items.reduce((sum, item) => sum + lineTotal(item, "A"), 0);
-  const subtotalB =
-    quotation.priceMode === "dual"
-      ? quotation.items.reduce((sum, item) => sum + lineTotal(item, "B"), 0)
-      : 0;
+  const isDual = quotation.priceMode === "dual";
+  const subtotalA = quotation.items.reduce(
+    (sum, item) => sum + (isDual ? lineTotal(item, "A") : singleLineAmount(item)),
+    0,
+  );
+  const subtotalB = isDual
+    ? quotation.items.reduce((sum, item) => sum + lineTotal(item, "B"), 0)
+    : 0;
 
   const discountValue = toNumber(quotation.discount);
   const discountAmountA =

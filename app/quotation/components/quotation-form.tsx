@@ -1,9 +1,14 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import type { Currency, Quotation } from "../../lib/quotations/types";
+import type { Currency, Quotation, QuotationItem } from "../../lib/quotations/types";
 import { createEmptyItem } from "../../lib/quotations/types";
-import { formatMoney, lineTotal } from "../../lib/quotations/calculations";
+import { hasManualAmount, lineTotal } from "../../lib/quotations/calculations";
+
+function computedAmountValue(item: QuotationItem): string {
+  const value = lineTotal(item);
+  return value ? String(Math.round(value * 100) / 100) : "";
+}
 
 type Props = {
   quotation: Quotation;
@@ -217,7 +222,12 @@ export default function QuotationForm({ quotation, onChange }: Props) {
                       type="number"
                       className={`${inputClass} text-right`}
                       value={item.amount}
-                      onChange={(e) => updateItem(item.id, { amount: e.target.value })}
+                      onChange={(e) =>
+                        updateItem(
+                          item.id,
+                          isDual ? { amount: e.target.value } : { amount: e.target.value, total: "" },
+                        )
+                      }
                       placeholder="0.00"
                     />
                   </td>
@@ -233,8 +243,15 @@ export default function QuotationForm({ quotation, onChange }: Props) {
                     </td>
                   )}
                   {!isDual && (
-                    <td className="py-2 pr-2 text-right font-semibold text-slate-700">
-                      {formatMoney(lineTotal(item))}
+                    <td className="py-2 pr-2">
+                      <input
+                        type="number"
+                        min="0"
+                        className={`${inputClass} text-right font-semibold`}
+                        value={hasManualAmount(item) ? item.total : computedAmountValue(item)}
+                        onChange={(e) => updateItem(item.id, { total: e.target.value })}
+                        placeholder="0.00"
+                      />
                     </td>
                   )}
                   <td className="py-2 text-center">

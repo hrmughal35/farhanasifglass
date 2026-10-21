@@ -1,7 +1,14 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
 import type { Quotation } from "../../lib/quotations/types";
 import { CURRENCY_SYMBOLS } from "../../lib/quotations/types";
-import { calculateTotals, formatMoney, itemQuantity, lineTotal } from "../../lib/quotations/calculations";
+import {
+  calculateTotals,
+  formatMoney,
+  hasManualAmount,
+  itemQuantity,
+  lineTotal,
+  singleLineAmount,
+} from "../../lib/quotations/calculations";
 
 Font.register({
   family: "Helvetica-Bold",
@@ -422,7 +429,9 @@ export default function QuotationPdfDocument({ quotation, logoSrc }: QuotationPd
                       <Text style={styles.tdMuted}>{item.amount ? formatMoney(parseFloat(item.amount)) : "—"}</Text>
                     </View>
                     <View style={styles.colAmountLast}>
-                      <Text style={styles.tdAmount}>{item.amount ? formatMoney(lineTotal(item)) : "—"}</Text>
+                      <Text style={styles.tdAmount}>
+                        {item.amount || hasManualAmount(item) ? formatMoney(singleLineAmount(item)) : "—"}
+                      </Text>
                     </View>
                   </>
                 )}

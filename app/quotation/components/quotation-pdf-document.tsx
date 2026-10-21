@@ -1,7 +1,7 @@
 import { Document, Page, View, Text, Image, StyleSheet, Font } from "@react-pdf/renderer";
 import type { Quotation } from "../../lib/quotations/types";
 import { CURRENCY_SYMBOLS } from "../../lib/quotations/types";
-import { calculateTotals, formatMoney } from "../../lib/quotations/calculations";
+import { calculateTotals, formatMoney, itemQuantity, lineTotal } from "../../lib/quotations/calculations";
 
 Font.register({
   family: "Helvetica-Bold",
@@ -147,9 +147,10 @@ const styles = StyleSheet.create({
   },
   colIndex: { width: "6%", paddingLeft: 10, paddingRight: 4 },
   colDesc: { width: "44%", paddingRight: 6 },
-  colSize: { width: "18%", paddingRight: 6 },
-  colAmount: { width: "16%", paddingRight: 6, textAlign: "right" },
-  colAmountWide: { width: "32%", paddingRight: 10, textAlign: "right" },
+  colSize: { width: "14%", paddingRight: 6 },
+  colQty: { width: "8%", paddingRight: 6, textAlign: "right" },
+  colAmount: { width: "14%", paddingRight: 6, textAlign: "right" },
+  colAmountLast: { width: "14%", paddingRight: 10, textAlign: "right" },
   thText: {
     color: "#ffffff",
     fontSize: 7.5,
@@ -382,13 +383,17 @@ export default function QuotationPdfDocument({ quotation, logoSrc }: QuotationPd
               <View style={styles.colIndex}><Text style={styles.thText}>#</Text></View>
               <View style={styles.colDesc}><Text style={styles.thText}>Description / Scope of Work</Text></View>
               <View style={styles.colSize}><Text style={styles.thText}>Size (cm)</Text></View>
+              <View style={styles.colQty}><Text style={styles.thText}>Qty</Text></View>
               {isDual ? (
                 <>
                   <View style={styles.colAmount}><Text style={styles.thText}>{quotation.optionALabel}</Text></View>
-                  <View style={styles.colAmount}><Text style={styles.thText}>{quotation.optionBLabel}</Text></View>
+                  <View style={styles.colAmountLast}><Text style={styles.thText}>{quotation.optionBLabel}</Text></View>
                 </>
               ) : (
-                <View style={styles.colAmountWide}><Text style={styles.thText}>Amount ({symbol})</Text></View>
+                <>
+                  <View style={styles.colAmount}><Text style={styles.thText}>Unit Price</Text></View>
+                  <View style={styles.colAmountLast}><Text style={styles.thText}>Amount ({symbol})</Text></View>
+                </>
               )}
             </View>
 
@@ -401,21 +406,25 @@ export default function QuotationPdfDocument({ quotation, logoSrc }: QuotationPd
                 <View style={styles.colIndex}><Text style={styles.tdText}>{index + 1}</Text></View>
                 <View style={styles.colDesc}><Text style={styles.tdText}>{item.description || "—"}</Text></View>
                 <View style={styles.colSize}><Text style={styles.tdMuted}>{item.size || "—"}</Text></View>
+                <View style={styles.colQty}><Text style={styles.tdText}>{itemQuantity(item)}</Text></View>
                 {isDual ? (
                   <>
                     <View style={styles.colAmount}>
-                      <Text style={styles.tdAmount}>{item.amount ? formatMoney(parseFloat(item.amount)) : "—"}</Text>
+                      <Text style={styles.tdAmount}>{item.amount ? formatMoney(lineTotal(item, "A")) : "—"}</Text>
                     </View>
-                    <View style={styles.colAmount}>
-                      <Text style={styles.tdAmount}>{item.amountB ? formatMoney(parseFloat(item.amountB)) : "—"}</Text>
+                    <View style={styles.colAmountLast}>
+                      <Text style={styles.tdAmount}>{item.amountB ? formatMoney(lineTotal(item, "B")) : "—"}</Text>
                     </View>
                   </>
                 ) : (
-                  <View style={styles.colAmountWide}>
-                    <Text style={styles.tdAmount}>
-                      {item.amount ? `${symbol} ${formatMoney(parseFloat(item.amount))}` : "—"}
-                    </Text>
-                  </View>
+                  <>
+                    <View style={styles.colAmount}>
+                      <Text style={styles.tdMuted}>{item.amount ? formatMoney(parseFloat(item.amount)) : "—"}</Text>
+                    </View>
+                    <View style={styles.colAmountLast}>
+                      <Text style={styles.tdAmount}>{item.amount ? formatMoney(lineTotal(item)) : "—"}</Text>
+                    </View>
+                  </>
                 )}
               </View>
             ))}

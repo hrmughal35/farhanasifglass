@@ -8,6 +8,7 @@ export type QuotationItem = {
   id: string;
   description: string;
   size: string;
+  quantity: string;
   amount: string;
   amountB: string;
 };
@@ -46,6 +47,7 @@ export function createEmptyItem(): QuotationItem {
     id: crypto.randomUUID(),
     description: "",
     size: "",
+    quantity: "1",
     amount: "",
     amountB: "",
   };

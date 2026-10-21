@@ -1,8 +1,19 @@
-import type { Quotation } from "./types";
+import type { Quotation, QuotationItem } from "./types";
 
-function toNumber(value: string): number {
-  const n = parseFloat(value);
+function toNumber(value: string | undefined): number {
+  const n = parseFloat(value ?? "");
   return Number.isFinite(n) ? n : 0;
+}
+
+export function itemQuantity(item: QuotationItem): number {
+  // Quotations saved before the quantity column existed have no quantity; treat them as 1.
+  if (item.quantity === undefined || item.quantity.trim() === "") return 1;
+  return toNumber(item.quantity);
+}
+
+export function lineTotal(item: QuotationItem, option: "A" | "B" = "A"): number {
+  const price = toNumber(option === "A" ? item.amount : item.amountB);
+  return price * itemQuantity(item);
 }
 
 export type QuotationTotals = {
@@ -19,10 +30,10 @@ export type QuotationTotals = {
 };
 
 export function calculateTotals(quotation: Quotation): QuotationTotals {
-  const subtotalA = quotation.items.reduce((sum, item) => sum + toNumber(item.amount), 0);
+  const subtotalA = quotation.items.reduce((sum, item) => sum + lineTotal(item, "A"), 0);
   const subtotalB =
     quotation.priceMode === "dual"
-      ? quotation.items.reduce((sum, item) => sum + toNumber(item.amountB), 0)
+      ? quotation.items.reduce((sum, item) => sum + lineTotal(item, "B"), 0)
       : 0;
 
   const discountValue = toNumber(quotation.discount);

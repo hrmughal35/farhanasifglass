@@ -3,6 +3,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import type { Currency, Quotation } from "../../lib/quotations/types";
 import { createEmptyItem } from "../../lib/quotations/types";
+import { formatMoney, lineTotal } from "../../lib/quotations/calculations";
 
 type Props = {
   quotation: Quotation;
@@ -163,16 +164,20 @@ export default function QuotationForm({ quotation, onChange }: Props) {
         )}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
+          <table className="w-full min-w-[680px] border-collapse text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
                 <th className="w-8 pb-2">#</th>
                 <th className="pb-2">Description / Scope of Work</th>
                 <th className="w-28 pb-2">Size (cm)</th>
+                <th className="w-20 pb-2 text-right">Qty</th>
                 <th className="w-28 pb-2 text-right">
-                  {isDual ? quotation.optionALabel : `Amount`}
+                  {isDual ? `${quotation.optionALabel} (unit)` : "Unit Price"}
                 </th>
-                {isDual && <th className="w-28 pb-2 text-right">{quotation.optionBLabel}</th>}
+                {isDual && (
+                  <th className="w-28 pb-2 text-right">{quotation.optionBLabel} (unit)</th>
+                )}
+                {!isDual && <th className="w-28 pb-2 text-right">Amount</th>}
                 <th className="w-8 pb-2" />
               </tr>
             </thead>
@@ -200,6 +205,16 @@ export default function QuotationForm({ quotation, onChange }: Props) {
                   <td className="py-2 pr-2">
                     <input
                       type="number"
+                      min="0"
+                      className={`${inputClass} text-right`}
+                      value={item.quantity ?? "1"}
+                      onChange={(e) => updateItem(item.id, { quantity: e.target.value })}
+                      placeholder="1"
+                    />
+                  </td>
+                  <td className="py-2 pr-2">
+                    <input
+                      type="number"
                       className={`${inputClass} text-right`}
                       value={item.amount}
                       onChange={(e) => updateItem(item.id, { amount: e.target.value })}
@@ -215,6 +230,11 @@ export default function QuotationForm({ quotation, onChange }: Props) {
                         onChange={(e) => updateItem(item.id, { amountB: e.target.value })}
                         placeholder="0.00"
                       />
+                    </td>
+                  )}
+                  {!isDual && (
+                    <td className="py-2 pr-2 text-right font-semibold text-slate-700">
+                      {formatMoney(lineTotal(item))}
                     </td>
                   )}
                   <td className="py-2 text-center">
